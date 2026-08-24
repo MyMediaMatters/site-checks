@@ -1,0 +1,17 @@
+{
+  "name": "@mmm/site-checks",
+  "version": "0.1.0",
+  "description": "Shared Playwright site checks for My Media Matters sites. Routes are derived from the app router, not hand-listed.",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": "./index.js",
+    "./config": "./config.js",
+    "./routes": "./lib/routes.js"
+  },
+  "files": ["index.js", "index.d.ts", "config.js", "lib"],
+  "peerDependencies": { "@playwright/test": ">=1.62.0" },
+  "license": "UNLICENSED",
+  "private": true
+}
