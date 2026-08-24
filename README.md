@@ -45,13 +45,21 @@ Add a page, it gets tested. Nothing to remember.
 |---|---|
 | `include` | Skip discovery, test exactly these routes |
 | `exclude` | Route prefixes to skip (replaces the auth defaults) |
+| `extraRoutes` | Routes to **add** to discovery — use for one instance of a `[slug]` route |
 | `maxRoutes` | Cap routes tested; warns naming how many were dropped |
 | `root` | Project root to scan (defaults to `process.cwd()`) |
 
 ```ts
 // a site with auth-gated areas the defaults do not know about
 siteChecks({ exclude: ["/dashboard", "/designer", "/sales"] });
+
+// cover one instance of each dynamic route
+siteChecks({ extraRoutes: ["/services/concrete", "/locations/enid-concrete"] });
 ```
+
+Dynamic routes cannot be enumerated from disk — the params do not exist there.
+`extraRoutes` adds representative instances **on top of** discovery; `include`
+replaces discovery entirely and should be rare.
 
 ## Checks
 

@@ -5,6 +5,8 @@ export interface SiteChecksOptions {
   include?: string[];
   /** Route prefixes to exclude. Overrides the built-in auth-area defaults. */
   exclude?: string[];
+  /** Routes to add to discovery — e.g. one instance of a [slug] route. */
+  extraRoutes?: string[];
   /** Cap routes tested. Emits a warning naming what was dropped. */
   maxRoutes?: number;
 }
