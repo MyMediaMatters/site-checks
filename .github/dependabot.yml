@@ -1,0 +1,18 @@
+# Automated dependency maintenance (My Media Matters).
+# Security patches are handled org-wide (Dependabot security updates); this file
+# adds a low-noise MONTHLY pass for routine version updates.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    groups:
+      # Bundle safe (minor + patch) bumps into ONE PR; majors stay separate.
+      safe-updates:
+        update-types:
+          - "minor"
+          - "patch"
