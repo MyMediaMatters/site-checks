@@ -11,8 +11,21 @@ updates:
     commit-message:
       prefix: "deps"
     groups:
-      # Bundle safe (minor + patch) bumps into ONE PR; majors stay separate.
+      # Bundle safe (minor + patch) bumps into ONE PR to review at a glance.
       safe-updates:
         update-types:
           - "minor"
           - "patch"
+      # And bundle MAJORS into one PR too. Leaving them separate is what
+      # produced 398 open Dependabot PRs across 81 repos by 15 September
+      # 2026 - one per package, most of them a single library going up one
+      # major version, and none of them read. Grouped, the worst repo goes
+      # from twenty open PRs to two.
+      #
+      # THE TRADE IS DELIBERATE. A grouped major PR is likelier to fail its
+      # build than any single bump, because it carries every breaking change
+      # at once. That is the point: it fails ONCE, loudly, on a branch
+      # preview, instead of failing eight times where nobody looks.
+      major-updates:
+        update-types:
+          - "major"
