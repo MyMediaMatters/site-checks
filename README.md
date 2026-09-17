@@ -11,7 +11,7 @@ never agreed to.
 ## Install
 
 ```bash
-npm install -D github:MyMediaMatters/site-checks#v0.1.0 @playwright/test@1.62.1
+npm install -D github:MyMediaMatters/site-checks#v0.3.0 @playwright/test@1.62.1
 ```
 
 ## Use
