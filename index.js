@@ -77,7 +77,18 @@ export function siteChecks(options = {}) {
   // ---- accessibility ---------------------------------------------------
   test("skip to content link exists", async ({ page }) => {
     await page.goto("/");
-    expect(await page.locator('a[href="#main-content"], a[href="#content"]').count()).toBeGreaterThan(0);
+    // `#main` is as common as `#main-content` -- it is the natural id for a
+    // <main> landmark -- and only matching the latter two reported a missing
+    // skip link on a site that had a working one.
+    const skip = page.locator('a[href="#main-content"], a[href="#content"], a[href="#main"]').first();
+    expect(await skip.count(), "no skip-to-content link").toBeGreaterThan(0);
+    // A skip link pointing at an id nobody kept is the failure worth catching:
+    // it is present, it looks right in the markup, and it goes nowhere.
+    const target = await skip.getAttribute("href");
+    expect(
+      await page.locator(`[id="${target.slice(1)}"]`).count(),
+      `skip link points at ${target}, which is not on the page`
+    ).toBeGreaterThan(0);
   });
 
   test("page has lang attribute", async ({ page }) => {
