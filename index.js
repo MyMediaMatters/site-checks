@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { discoverRoutes } from "./lib/routes.js";
 
+// Re-exported so a site can pull both from one place; calling `siteChecks()`
+// alone generates no SEO tests.
+export { seoChecks } from "./seo.js";
+
 const IGNORED_CONSOLE = ["favicon", "analytics", "gtag", "clarity"];
 
 /**

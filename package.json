@@ -1,18 +1,20 @@
 {
   "name": "@mmm/site-checks",
-  "version": "0.2.0",
-  "description": "Shared Playwright site checks for My Media Matters sites. Routes are derived from the app router, not hand-listed.",
+  "version": "0.3.0",
+  "description": "Shared Playwright site and SEO checks for My Media Matters sites. Routes are derived from the app router, not hand-listed.",
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
   "exports": {
     ".": "./index.js",
+    "./seo": "./seo.js",
     "./config": "./config.js",
     "./routes": "./lib/routes.js"
   },
   "files": [
     "index.js",
     "index.d.ts",
+    "seo.js",
     "config.js",
     "lib"
   ],

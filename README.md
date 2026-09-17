@@ -2,6 +2,12 @@
 
 Shared Playwright checks for My Media Matters sites.
 
+Two suites. `siteChecks()` is the baseline every site gets. `seoChecks()` is the
+extra accountability that comes with an SEO retainer — canonicals, structured
+data, content depth and the internal link graph. They are separate so a site
+that is not on a retainer can run the baseline without inheriting thresholds it
+never agreed to.
+
 ## Install
 
 ```bash
@@ -23,6 +29,13 @@ export default defineConfig(mmmConfig());
 import { siteChecks } from "@mmm/site-checks";
 
 siteChecks();
+```
+
+```ts
+// tests/seo-checks.spec.ts — advanced SEO clients only
+import { seoChecks } from "@mmm/site-checks";
+
+seoChecks({ analyticsHost: "googletagmanager.com" });
 ```
 
 That is the whole per-repo footprint. There is no `PAGES` array to maintain.
@@ -72,3 +85,51 @@ nav links resolve · mobile menu opens · favicon · Open Graph tags.
 Conditional: contact-form fields (only if a contact route exists) · footer
 privacy link (only if a privacy route exists). A site without those pages is not
 failed for lacking them.
+
+## SEO checks
+
+`seoChecks()` shares route discovery with `siteChecks()` and duplicates none of
+its checks — `h1`, meta description and image alt text are covered there and are
+not repeated here.
+
+Per route: an **absolute** canonical · at least one parseable JSON-LD block with
+an `@type` · at least `minWords` words inside `<main>` · at least
+`minInternalLinks` in-content links to other pages · analytics loaded (only if
+`analyticsHost` is set).
+
+Once per site: canonicals are **unique and share one host** · **no page is
+orphaned**.
+
+The orphan check is the reason this suite exists. An orphaned page passes every
+single-page check there is — it has a title, an `h1`, a canonical — and crawlers
+still reach it late or never, because nothing links to it. Finding one needs the
+whole link graph, which no per-page assertion can see. On American Roofing it
+caught three case-study pages that every other check passed happily.
+
+Two details worth knowing:
+
+- Links are compared with `.html` stripped. Sites migrated off Weebly or Wix
+  keep their indexed `.html` URLs alive as rewrites and link to them in that
+  form, while the app router calls the same page `/services`. Without this,
+  every such page reads as an orphan.
+- The per-route link count is scoped to `<main>`. Header and footer links are on
+  every page and say nothing about whether *this* page is wired into the site.
+  The orphan check, by contrast, counts links anywhere — a page in the nav is
+  not an orphan.
+
+| Option | Default | Effect |
+|---|---|---|
+| `minWords` | `150` | Minimum words inside `<main>` |
+| `minInternalLinks` | `3` | Minimum in-content links to other pages |
+| `requireJsonLd` | `true` | Require parseable JSON-LD with an `@type` |
+| `requiredTypes` | `[]` | `@type`s that must appear on every page |
+| `analyticsHost` | — | e.g. `"googletagmanager.com"`; omit to skip |
+| `checkOrphans` | `true` | Fail on a page nothing links to |
+
+`analyticsHost` is matched against the script's **hostname**, never as a
+substring of its URL. `src.includes("googletagmanager.com")` reports analytics as
+firing for `https://evil.test/?x=googletagmanager.com`, and a check that says yes
+for the wrong script is worse than no check.
+
+Route options (`include`, `exclude`, `extraRoutes`, `maxRoutes`, `root`) work
+exactly as they do for `siteChecks()`.
