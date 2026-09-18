@@ -1,21 +1,35 @@
 {
   "name": "@mmm/site-checks",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Shared Playwright site and SEO checks for My Media Matters sites. Routes are derived from the app router, not hand-listed.",
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
   "exports": {
-    ".": "./index.js",
-    "./seo": "./seo.js",
-    "./config": "./config.js",
-    "./routes": "./lib/routes.js"
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./seo": {
+      "types": "./seo.d.ts",
+      "default": "./seo.js"
+    },
+    "./config": {
+      "types": "./config.d.ts",
+      "default": "./config.js"
+    },
+    "./routes": {
+      "types": "./lib/routes.d.ts",
+      "default": "./lib/routes.js"
+    }
   },
   "files": [
     "index.js",
     "index.d.ts",
     "seo.js",
+    "seo.d.ts",
     "config.js",
+    "config.d.ts",
     "lib"
   ],
   "peerDependencies": {
