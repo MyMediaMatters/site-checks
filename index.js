@@ -69,7 +69,15 @@ export function siteChecks(options = {}) {
     test(`page ${path} has no console errors`, async ({ page }) => {
       const errors = [];
       page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-      await page.goto(path, { waitUntil: "networkidle" });
+      await page.goto(path, { waitUntil: "load" });
+      // Settle if the page will, but never fail because it will not. This used
+      // to be `waitUntil: "networkidle"`, which hung for the full 30s timeout on
+      // ASOM's /contact: it embeds a Google Map, and a live map keeps streaming
+      // tiles, so the network is never idle. The failure then reported itself as
+      // "Test timeout exceeded" on a test named "has no console errors", which
+      // is about as misleading as a check can be. Any client site with a map,
+      // chat widget or embedded video has the same shape.
+      await page.waitForLoadState("networkidle", { timeout: 3000 }).catch(() => {});
       expect(errors.filter((e) => !IGNORED_CONSOLE.some((i) => e.includes(i)))).toEqual([]);
     });
   }

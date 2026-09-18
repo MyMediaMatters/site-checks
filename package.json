@@ -1,6 +1,6 @@
 {
   "name": "@mmm/site-checks",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Shared Playwright site and SEO checks for My Media Matters sites. Routes are derived from the app router, not hand-listed.",
   "type": "module",
   "main": "index.js",
