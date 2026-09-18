@@ -86,8 +86,15 @@ export function seoChecks(options = {}) {
   for (const path of limited) {
     test(`seo ${path} has an absolute canonical URL`, async ({ page }) => {
       await page.goto(path);
-      const href = await page.locator("link[rel=canonical]").first().getAttribute("href");
-      expect(href, "no <link rel=canonical>").toBeTruthy();
+      // count() first, deliberately. getAttribute() auto-waits for the element,
+      // so on a page with no canonical at all it does not fail -- it hangs for
+      // the full test timeout and reports "Test timeout exceeded", which says
+      // nothing about what is wrong. A site missing canonicals sitewide is
+      // exactly when this check matters, and it was the slowest, least
+      // informative way to find out.
+      const link = page.locator("link[rel=canonical]").first();
+      expect(await link.count(), "no <link rel=canonical>").toBeGreaterThan(0);
+      const href = await link.getAttribute("href");
       // A relative canonical is legal HTML and a liability: it resolves against
       // whatever host served the page, so a preview deployment starts claiming
       // canonicity for the client's own URLs.
@@ -175,8 +182,13 @@ export function seoChecks(options = {}) {
     const seen = new Map();
     for (const path of limited) {
       await page.goto(path);
-      const href = await page.locator("link[rel=canonical]").first().getAttribute("href");
-      if (!href) continue; // reported per-route above; not re-failed here
+      const link = page.locator("link[rel=canonical]").first();
+      // Same reason as above: never getAttribute() a locator that may not
+      // exist. Pages with no canonical are reported per-route; here they are
+      // skipped rather than re-failed.
+      if ((await link.count()) === 0) continue;
+      const href = await link.getAttribute("href");
+      if (!href) continue;
       // Two pages claiming one canonical tells search engines one of them does
       // not exist. Two hosts (www vs apex, or a preview domain) splits the
       // site's authority in half.
