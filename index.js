@@ -67,8 +67,13 @@ export function siteChecks(options = {}) {
     });
 
     test(`page ${path} has no console errors`, async ({ page }) => {
-      const errors = [];
-      page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+      const messages = [];
+      page.on("console", (m) => {
+        if (m.type() !== "error") return;
+        // Record WHERE it came from, not just what it said. A bare message is
+        // close to undiagnosable from a CI log.
+        messages.push({ text: m.text(), url: m.location()?.url ?? "" });
+      });
       await page.goto(path, { waitUntil: "load" });
       // Settle if the page will, but never fail because it will not. This used
       // to be `waitUntil: "networkidle"`, which hung for the full 30s timeout on
@@ -78,7 +83,18 @@ export function siteChecks(options = {}) {
       // is about as misleading as a check can be. Any client site with a map,
       // chat widget or embedded video has the same shape.
       await page.waitForLoadState("networkidle", { timeout: 3000 }).catch(() => {});
-      expect(errors.filter((e) => !IGNORED_CONSOLE.some((i) => e.includes(i)))).toEqual([]);
+
+      const origin = new URL(page.url()).origin;
+      const errors = messages
+        // A third-party iframe — a map, a video, a chat widget — logs its own
+        // noise into the page's console, and the site owner cannot act on any
+        // of it. ASOM's /contact embeds a Google Map that logs
+        // "%c%d font-size:0;color:transparent NaN" twice on every load. Only
+        // messages from this site's own origin are this site's problem.
+        .filter((m) => !m.url || m.url.startsWith(origin))
+        .filter((m) => !IGNORED_CONSOLE.some((i) => m.text.includes(i)));
+
+      expect(errors.map((m) => `${m.text}  [${m.url || "no source"}]`)).toEqual([]);
     });
   }
 
