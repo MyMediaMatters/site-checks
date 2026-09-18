@@ -11,8 +11,13 @@ never agreed to.
 ## Install
 
 ```bash
-npm install -D github:MyMediaMatters/site-checks#v0.3.0 @playwright/test@1.62.1
+npm install -D github:MyMediaMatters/site-checks#<commit-sha> @playwright/test@^1.62.1
 ```
+
+Pin the commit SHA, not a branch: `#main` re-resolves on every install, so CI
+can start failing on a change nobody made here. Tags are fine where one exists —
+check `git ls-remote --tags` before naming one, because the version in
+`package.json` moves ahead of the tags.
 
 ## Use
 
@@ -23,6 +28,36 @@ import { mmmConfig } from "@mmm/site-checks/config";
 
 export default defineConfig(mmmConfig());
 ```
+
+### Whatever starts the server must be a declared dependency
+
+`mmmConfig` defaults to `npm run dev`. Override `webServerCommand` to run a
+binary — `wrangler`, `serve`, `http-server` — and **that binary has to be in the
+site's own `devDependencies`**, not merely reachable:
+
+```ts
+export default defineConfig(
+  mmmConfig({
+    baseURL: "http://127.0.0.1:8788",
+    webServerCommand: "npx wrangler pages dev .vercel/output/static --port 8788",
+  })
+);
+// package.json must then carry "wrangler" in devDependencies.
+```
+
+Leave it undeclared and it still works locally, because some earlier `npx` run
+left a binary in `node_modules/.bin`. Then CI installs from the lockfile on a
+clean runner and the whole suite dies in three seconds:
+
+```
+[WebServer] sh: 1: wrangler: not found
+Error: Process from config.webServer was not able to start. Exit code: 127
+```
+
+pnpm is where this bites hardest — its strict layout does not hoist transitive
+binaries — but npm hoisting is incidental too, not a guarantee. To check before
+pushing: `rm -rf node_modules && <pm> install --frozen-lockfile` (npm: `npm ci`),
+then confirm `node_modules/.bin/<binary>` exists.
 
 ```ts
 // tests/site-checks.spec.ts
