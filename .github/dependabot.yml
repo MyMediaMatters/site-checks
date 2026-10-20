@@ -29,3 +29,9 @@ updates:
       major-updates:
         update-types:
           - "major"
+      # Security fixes arrive as their own Dependabot PRs and ignore the groups above. Bundle them
+      # into ONE PR per repo, so a run of advisories is one thing to review, not ten.
+      security-fixes:
+        applies-to: security-updates
+        patterns:
+          - "*"
