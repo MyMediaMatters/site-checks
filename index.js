@@ -141,11 +141,18 @@ export function siteChecks(options = {}) {
   test("mobile menu opens", async ({ page, isMobile }) => {
     test.skip(!isMobile, "mobile only");
     await page.goto("/");
-    const button = page
-      .locator('button[aria-label*="menu" i], button[aria-expanded]')
-      .first();
+    // Take the first VISIBLE candidate: a desktop dropdown or search button that is hidden
+    // on mobile can precede the hamburger in the DOM and was being picked instead.
+    const candidates = page.locator('button[aria-label*="menu" i], button[aria-expanded]');
+    let button = candidates.first();
+    for (let i = 0; i < (await candidates.count()); i++) {
+      if (await candidates.nth(i).isVisible()) {
+        button = candidates.nth(i);
+        break;
+      }
+    }
     // A site with no mobile menu is a design choice, not a defect.
-    test.skip((await button.count()) === 0, "no mobile menu on this site");
+    test.skip((await candidates.count()) === 0, "no mobile menu on this site");
     await expect(button).toBeVisible();
     await button.click();
     await expect(page.locator('[role="dialog"], nav').last()).toBeVisible();
@@ -155,7 +162,7 @@ export function siteChecks(options = {}) {
   if (contactRoute) {
     test("contact form has required fields", async ({ page }) => {
       await page.goto(contactRoute);
-      await expect(page.locator('input[name*="name" i], input[placeholder*="name" i]').first()).toBeVisible();
+      await expect(page.locator('input[name*="name" i], input[name="first"], input[name="full"], input[placeholder*="name" i]').first()).toBeVisible();
       await expect(page.locator('input[name*="email" i], input[type="email"]').first()).toBeVisible();
       await expect(page.locator('textarea, input[name*="message" i]').first()).toBeVisible();
       await expect(page.locator('button[type="submit"], input[type="submit"]').first()).toBeVisible();
