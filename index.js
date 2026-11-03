@@ -162,7 +162,7 @@ export function siteChecks(options = {}) {
   if (contactRoute) {
     test("contact form has required fields", async ({ page }) => {
       await page.goto(contactRoute);
-      await expect(page.locator('input[name*="name" i], input[name="first"], input[name="full"], input[placeholder*="name" i]').first()).toBeVisible();
+      await expect(page.locator('input[name*="name" i], input[name="first"], input[name="full"], input[name$="[first]" i], input[name$="[full]" i], input[placeholder*="name" i]').first()).toBeVisible();
       await expect(page.locator('input[name*="email" i], input[type="email"]').first()).toBeVisible();
       await expect(page.locator('textarea, input[name*="message" i]').first()).toBeVisible();
       await expect(page.locator('button[type="submit"], input[type="submit"]').first()).toBeVisible();
