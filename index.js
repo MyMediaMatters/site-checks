@@ -7,6 +7,10 @@ export { seoChecks } from "./seo.js";
 
 const IGNORED_CONSOLE = ["favicon", "analytics", "gtag", "clarity"];
 
+/** Accessibility overlay widgets are banned on every MMM site (MMM_SITE-BUILD-STANDARDS.md section 1). */
+const OVERLAY_WIDGETS =
+  /website-widgets\.pages\.dev|sienna(\.min)?\.js|acsbapp\.com|accessibe\.com|userway\.org|audioeye\.com|equalweb\.com|nagich\.com|reciteme\.com|adasitecompliance\.com|truabilit/i;
+
 /**
  * Generate the standard MMM site checks.
  *
@@ -64,6 +68,15 @@ export function siteChecks(options = {}) {
       for (let i = 0; i < (await images.count()); i++) {
         expect(await images.nth(i).getAttribute("alt")).not.toBeNull();
       }
+    });
+
+    test(`page ${path} loads no accessibility overlay widget`, async ({ page }) => {
+      const urls = [];
+      page.on("request", (r) => urls.push(r.url()));
+      await page.goto(path);
+      const srcs = await page.$$eval("script[src]", (els) => els.map((e) => e.src));
+      const hits = [...new Set([...urls, ...srcs].filter((u) => OVERLAY_WIDGETS.test(u)))];
+      expect(hits, "accessibility overlays (Sienna, accessiBe, UserWay...) are banned: fix accessibility in code").toEqual([]);
     });
 
     test(`page ${path} has no console errors`, async ({ page }) => {
