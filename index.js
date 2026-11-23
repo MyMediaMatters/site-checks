@@ -137,11 +137,11 @@ export function siteChecks(options = {}) {
   test("header navigation is visible on desktop", async ({ page, isMobile }) => {
     test.skip(!!isMobile, "desktop only");
     await page.goto("/");
-    // A desktop nav landmark, OR a visible menu button: some sites keep a hamburger menu on
+    // A desktop nav landmark, OR a visible menu button or hamburger icon (Weebly themes use a label): some sites keep a hamburger menu on
     // desktop by design (decided 2026-11, card #375). A site with neither still fails.
     const nav = page.locator("header nav, nav[aria-label]").first();
     const menuButton = page
-      .locator('button[aria-label*="menu" i]:visible, button[aria-expanded]:visible')
+      .locator('button[aria-label*="menu" i]:visible, button[aria-expanded]:visible, [class*="hamburger" i]:visible')
       .first();
     await expect(nav.or(menuButton).first()).toBeVisible();
   });
