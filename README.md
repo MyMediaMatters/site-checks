@@ -168,3 +168,35 @@ for the wrong script is worse than no check.
 
 Route options (`include`, `exclude`, `extraRoutes`, `maxRoutes`, `root`) work
 exactly as they do for `siteChecks()`.
+
+## Widget decisions (`@mmm/site-checks/widgets`)
+
+No embedded widget may disappear from a rebuild unseen. `widgetChecks()` scans the
+original Weebly capture (`capture/**/*.html`) for Common Ninja widget ids, and each id
+must have an entry in `widgets.json` at the repo root:
+
+```json
+{
+  "6828b5c8-5367-481f-b1f1-2bafb67a541c": { "decision": "replaced", "page": "/new-roof", "expect": "Thermoplastic Polyolefin" },
+  "63f3ef4d-4d5c-45f2-a0c5-18d8210788c8": { "decision": "kept" },
+  "00000000-0000-0000-0000-000000000000": { "decision": "removed", "reason": "...", "evidence": "what a real browser showed, and when" }
+}
+```
+
+- `replaced`: the page must contain the `expect` text, a phrase from the widget's content.
+- `kept`: the built page must still embed the widget.
+- `removed`: needs a `reason` and `evidence` that it showed nothing worth keeping.
+
+**Why:** a headless browser measures a Common Ninja widget at 0x0 because its content is
+in shadow DOM, so rebuilds recorded widgets as "empty" and dropped them. On
+`american-roofing` that removed the 8-card roofing-systems grid from `/new-roof`.
+Read the widget's config (`https://cdn.commoninja.com/api/v1/embed/<id>`) or look at it in
+a real browser before deciding.
+
+```ts
+// tests/widgets.spec.ts
+import { widgetChecks } from "@mmm/site-checks/widgets";
+widgetChecks();
+```
+
+A repo with no Common Ninja widget in its capture gets no tests from this.
