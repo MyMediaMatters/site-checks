@@ -7,6 +7,10 @@ export { seoChecks } from "./seo.js";
 
 const IGNORED_CONSOLE = ["favicon", "analytics", "gtag", "clarity"];
 
+/** Accessibility overlay widgets are banned on every MMM site (MMM_SITE-BUILD-STANDARDS.md section 1). */
+const OVERLAY_WIDGETS =
+  /website-widgets\.pages\.dev|sienna(\.min)?\.js|acsbapp\.com|accessibe\.com|userway\.org|audioeye\.com|equalweb\.com|nagich\.com|reciteme\.com|adasitecompliance\.com|truabilit/i;
+
 /**
  * Generate the standard MMM site checks.
  *
@@ -64,6 +68,15 @@ export function siteChecks(options = {}) {
       for (let i = 0; i < (await images.count()); i++) {
         expect(await images.nth(i).getAttribute("alt")).not.toBeNull();
       }
+    });
+
+    test(`page ${path} loads no accessibility overlay widget`, async ({ page }) => {
+      const urls = [];
+      page.on("request", (r) => urls.push(r.url()));
+      await page.goto(path);
+      const srcs = await page.$$eval("script[src]", (els) => els.map((e) => e.src));
+      const hits = [...new Set([...urls, ...srcs].filter((u) => OVERLAY_WIDGETS.test(u)))];
+      expect(hits, "accessibility overlays (Sienna, accessiBe, UserWay...) are banned: fix accessibility in code").toEqual([]);
     });
 
     test(`page ${path} has no console errors`, async ({ page }) => {
@@ -124,7 +137,13 @@ export function siteChecks(options = {}) {
   test("header navigation is visible on desktop", async ({ page, isMobile }) => {
     test.skip(!!isMobile, "desktop only");
     await page.goto("/");
-    await expect(page.locator("header nav, nav[aria-label]").first()).toBeVisible();
+    // A desktop nav landmark, OR a visible menu button: some sites keep a hamburger menu on
+    // desktop by design (decided 2026-11, card #375). A site with neither still fails.
+    const nav = page.locator("header nav, nav[aria-label]").first();
+    const menuButton = page
+      .locator('button[aria-label*="menu" i]:visible, button[aria-expanded]:visible')
+      .first();
+    await expect(nav.or(menuButton).first()).toBeVisible();
   });
 
   test("all nav links resolve to real pages", async ({ page }) => {
@@ -162,7 +181,7 @@ export function siteChecks(options = {}) {
   if (contactRoute) {
     test("contact form has required fields", async ({ page }) => {
       await page.goto(contactRoute);
-      await expect(page.locator('input[name*="name" i], input[name="first"], input[name="full"], input[placeholder*="name" i]').first()).toBeVisible();
+      await expect(page.locator('input[name*="name" i], input[name="first"], input[name="full"], input[name$="[first]" i], input[name$="[full]" i], input[placeholder*="name" i]').first()).toBeVisible();
       await expect(page.locator('input[name*="email" i], input[type="email"]').first()).toBeVisible();
       await expect(page.locator('textarea, input[name*="message" i]').first()).toBeVisible();
       await expect(page.locator('button[type="submit"], input[type="submit"]').first()).toBeVisible();

@@ -112,7 +112,7 @@ replaces discovery entirely and should be rare.
 ## Checks
 
 Per route: returns 200 · title (≤60 chars) · meta description (≤160) · exactly
-one `h1` · all images have alt text · no console errors.
+one `h1` · all images have alt text · no accessibility overlay widget (Sienna, accessiBe, UserWay...) · no console errors.
 
 Once per site: skip-to-content link · `lang` attribute · header nav visible ·
 nav links resolve · mobile menu opens · favicon · Open Graph tags.
