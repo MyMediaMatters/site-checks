@@ -1,6 +1,6 @@
 {
   "name": "@mmm/site-checks",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Shared Playwright site and SEO checks for My Media Matters sites. Routes are derived from the app router, not hand-listed.",
   "type": "module",
   "main": "index.js",
@@ -21,6 +21,10 @@
     "./routes": {
       "types": "./lib/routes.d.ts",
       "default": "./lib/routes.js"
+    },
+    "./widgets": {
+      "types": "./widgets.d.ts",
+      "default": "./widgets.js"
     }
   },
   "files": [
@@ -30,7 +34,9 @@
     "seo.d.ts",
     "config.js",
     "config.d.ts",
-    "lib"
+    "lib",
+    "widgets.js",
+    "widgets.d.ts"
   ],
   "peerDependencies": {
     "@playwright/test": ">=1.62.0"
