@@ -141,7 +141,7 @@ export function siteChecks(options = {}) {
     // desktop by design (decided 2026-11, card #375). A site with neither still fails.
     const nav = page.locator("header nav, nav[aria-label]").first();
     const menuButton = page
-      .locator('button[aria-label*="menu" i]:visible, button[aria-expanded]:visible')
+      .locator('button[aria-label*="menu" i]:visible, button[aria-expanded]:visible, [role="button"][aria-expanded]:visible')
       .first();
     await expect(nav.or(menuButton).first()).toBeVisible();
   });
